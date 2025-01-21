@@ -1,0 +1,7 @@
+numpy==2.2.1
+networkx==3.4.2
+shapely==2.0.6
+scipy==1.14.1
+matplotlib==3.10.0
+imageio==2.36.1
+PyQt6==6.8.0
