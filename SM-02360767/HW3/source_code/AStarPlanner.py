@@ -21,9 +21,7 @@ class AStarPlanner(object):
             (0, -1), (1, 0), (0, 1), (-1, 0),
             (-1, -1), (1, -1), (-1, 1), (1, 1)
         ]
-
-        # Weighted A* factor; set or update in plan()
-        self.epsilon = 10.0
+        self.epsilon = 1.0
 
     def plan(self):
         """
@@ -46,7 +44,6 @@ class AStarPlanner(object):
         open_set = []
         heapq.heapify(open_set)
 
-        # Start node setup
         g_values = {}
         visited = set()
 
@@ -56,22 +53,18 @@ class AStarPlanner(object):
         self.parents[tuple(start_loc)] = None
 
         while open_set:
-            # pop the node with smallest f
-            f_current, current_node = heapq.heappop(open_set)
+            _, current_node = heapq.heappop(open_set)
             if current_node in visited:
                 continue
             visited.add(current_node)
             self.expanded_nodes.append(np.array(current_node))
 
-            # Check for goal
             if np.allclose(np.array(current_node), goal_loc):
                 return self.reconstruct_path(current_node)
 
-            # Expand neighbors
             for dx, dy in self.directions:
                 neighbor = (current_node[0] + dx, current_node[1] + dy)
                 if neighbor not in visited:
-                    # check collision
                     neighbor_arr = np.array(neighbor, dtype=float)
                     if (self.bb.config_validity_checker(neighbor_arr) and
                         self.bb.edge_validity_checker(np.array(current_node), neighbor_arr)):

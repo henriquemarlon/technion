@@ -16,18 +16,18 @@ from RRTInspectionPlanner import RRTInspectionPlanner
 from RRTStarPlanner import RRTStarPlanner
 from twoD.visualizer import Visualizer
 
-MAP_DETAILS = {"json_file": "twoD/map1.json", "start": np.array([10,10]), "goal": np.array([4, 6])}
-# MAP_DETAILS = {"json_file": "twoD/map2.json", "start": np.array([360, 150]), "goal": np.array([100, 200])}
+# MAP_DETAILS = {"json_file": "twoD/map1.json", "start": np.array([10,10]), "goal": np.array([4, 6])}
+MAP_DETAILS = {"json_file": "twoD/map2.json", "start": np.array([360, 150]), "goal": np.array([100, 200])}
 
 
 def run_dot_2d_astar():
-    planning_env = MapDotEnvironment(json_file=MAP_DETAILS["json_file"])
+    planning_env = MapDotEnvironment(json_file=MAP_DETAILS["json_file"]) 
     bb = DotBuildingBlocks2D(planning_env)
     planner = AStarPlanner(bb=bb, start=MAP_DETAILS["start"], goal=MAP_DETAILS["goal"])
 
     # execute plan
     plan = planner.plan()
-    DotVisualizer(bb).visualize_map(plan=plan, expanded_nodes=planner.get_expanded_nodes(), show_map=True, start=MAP_DETAILS["start"], goal=MAP_DETAILS["goal"])
+    DotVisualizer(bb).visualize_map(plan=plan, expanded_nodes=planner.get_expanded_nodes(), show_map=False, start=MAP_DETAILS["start"], goal=MAP_DETAILS["goal"])
 
 def run_dot_2d_rrt():
     planning_env = MapDotEnvironment(json_file=MAP_DETAILS["json_file"])
@@ -36,7 +36,7 @@ def run_dot_2d_rrt():
 
     # execute plan
     plan = planner.plan()
-    DotVisualizer(bb).visualize_map(plan=plan, tree_edges=planner.tree.get_edges_as_states(), show_map=True)
+    DotVisualizer(bb).visualize_map(plan=plan, tree_edges=planner.tree.get_edges_as_states(), show_map=False)
 
 def run_2d_rrt_motion_planning():
     MAP_DETAILS = {"json_file": "twoD/map_mp.json", "start": np.array([0.78, -0.78, 0.0, 0.0]), "goal": np.array([0.3, 0.15, 1.0, 1.1])}
@@ -52,7 +52,7 @@ def run_2d_rrt_inspection_planning():
     MAP_DETAILS = {"json_file": "twoD/map_ip.json", "start": np.array([0.78, -0.78, 0.0, 0.0]), "goal": np.array([0.3, 0.15, 1.0, 1.1])}
     planning_env = MapEnvironment(json_file=MAP_DETAILS["json_file"], task="ip")
     bb = BuildingBlocks2D(planning_env)
-    planner = RRTInspectionPlanner(bb=bb, start=MAP_DETAILS["start"], ext_mode="E2", goal_prob=0.01, coverage=0.75)
+    planner = RRTInspectionPlanner(bb=bb, start=MAP_DETAILS["start"], ext_mode="E2", goal_prob=0.01, coverage=0.5)
 
     # execute plan
     plan = planner.plan()
@@ -121,9 +121,9 @@ def run_3d():
 
 
 if __name__ == "__main__":
-    # run_dot_2d_astar()
+    run_dot_2d_astar()
     # run_dot_2d_rrt()
     # run_dot_2d_rrt_star()
     # run_2d_rrt_motion_planning()
-    run_2d_rrt_inspection_planning()
+    # run_2d_rrt_inspection_planning()
     # run_3d()

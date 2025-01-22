@@ -1,0 +1,10 @@
+Planning completed in 3347.62 seconds with coverage 0.75.
+Planning completed in 106.09 seconds with coverage 0.75.
+Planning completed in 18.32 seconds with coverage 0.82.
+Planning completed in 8.39 seconds with coverage 0.79.
+Planning completed in 365.97 seconds with coverage 0.86.
+Planning completed in 2265.87 seconds with coverage 0.75.
+Planning completed in 63.29 seconds with coverage 0.75.
+Planning completed in 63.29 seconds with coverage 0.75.
+Planning completed in 471.38 seconds with coverage 0.75.
+Planning completed in 47.23 seconds with coverage 0.75.

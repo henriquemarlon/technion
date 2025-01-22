@@ -45,8 +45,7 @@ class DotVisualizer:
         if show_map:
             plt.show()
         else:
-            plt.savefig('map.png')
-
+            plt.savefig(f'map_{datetime.now().strftime("%d-%m-%Y_%H-%M-%S")}.png')
         return plt
 
     def create_map_visualization(self):
