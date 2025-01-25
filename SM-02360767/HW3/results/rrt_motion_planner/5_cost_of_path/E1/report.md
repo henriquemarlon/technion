@@ -8,4 +8,3 @@ Planning completed in 4.23 seconds with cost 3.6971409191957694
 Planning completed in 0.61 seconds with cost 6.421869601473644
 Planning completed in 0.57 seconds with cost 6.42557730400756
 Planning completed in 0.54 seconds with cost 4.110986211661407
-Planning completed in 9.78 seconds with cost 10.516955195793626

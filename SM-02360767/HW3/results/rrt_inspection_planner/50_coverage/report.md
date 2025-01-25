@@ -8,4 +8,3 @@ Planning completed in 13.55 seconds with coverage 0.50.
 Planning completed in 64.26 seconds with coverage 0.54.
 Planning completed in 6.46 seconds with coverage 0.54.
 Planning completed in 26.22 seconds with coverage 0.54.
-Planning completed in 43.18 seconds with coverage 0.57.
