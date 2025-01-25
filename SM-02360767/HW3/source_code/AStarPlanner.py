@@ -2,7 +2,7 @@ import numpy as np
 import heapq
 
 class AStarPlanner(object):
-    def _init_(self, bb, start, goal):
+    def __init__(self, bb, start, goal):
         self.bb = bb
         self.start = start
         self.goal = goal
