@@ -48,8 +48,9 @@ class RRTMotionPlanner(object):
 
         # Retrieve the path from start to goal
         plan = self._extract_plan()
+        total_cost = self.compute_cost(plan)
         execution_time = time.time() - start_time
-        print(f"Planning completed in {execution_time:.2f} seconds.")
+        print(f"Planning completed in {execution_time:.2f} seconds with cost {total_cost}")
         return np.array(plan)
 
 
@@ -69,10 +70,18 @@ class RRTMotionPlanner(object):
         @param near_config The nearest configuration to the sampled configuration.
         @param rand_config The sampled configuration.
         '''
-        dist = self.bb.compute_distance(near_config, rand_config)
-        if dist <= self.eta:
+        if self.ext_mode == "E1":
+            # Extend all the way to the sampled configuration (E1)
             return rand_config
-        return near_config + self.eta * ((rand_config - near_config) / dist)
+        elif self.ext_mode == "E2":
+            # Extend by a step size η towards the sampled configuration (E2)
+            dist = self.bb.compute_distance(near_config, rand_config)
+            if dist <= self.eta:
+                return rand_config
+            return near_config + self.eta * ((rand_config - near_config) / dist)
+        else:
+            raise ValueError(f"Invalid extension mode: {self.ext_mode}")
+
 
     def _extract_plan(self):
         '''

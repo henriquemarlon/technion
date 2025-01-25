@@ -19,6 +19,21 @@ from twoD.visualizer import Visualizer
 # MAP_DETAILS = {"json_file": "twoD/map1.json", "start": np.array([10,10]), "goal": np.array([4, 6])}
 MAP_DETAILS = {"json_file": "twoD/map2.json", "start": np.array([360, 150]), "goal": np.array([100, 200])}
 
+EXPERIMENTS = [
+    {"ext_mode": "E1", "goal_prob": 0.2, "map": "twoD/map1.json"},
+    {"ext_mode": "E1", "goal_prob": 0.2, "map": "twoD/map1.json"},
+    {"ext_mode": "E1", "goal_prob": 0.2, "map": "twoD/map1.json"},
+    {"ext_mode": "E1", "goal_prob": 0.2, "map": "twoD/map1.json"},
+    {"ext_mode": "E1", "goal_prob": 0.2, "map": "twoD/map1.json"},
+    {"ext_mode": "E1", "goal_prob": 0.2, "map": "twoD/map1.json"},
+    {"ext_mode": "E1", "goal_prob": 0.2, "map": "twoD/map1.json"},
+    {"ext_mode": "E1", "goal_prob": 0.2, "map": "twoD/map1.json"},
+    {"ext_mode": "E1", "goal_prob": 0.2, "map": "twoD/map1.json"},
+    {"ext_mode": "E1", "goal_prob": 0.2, "map": "twoD/map1.json"},
+    # {"ext_mode": "E2", "goal_prob": 0.05, "map": "twoD/map1.json"},
+    # {"ext_mode": "E2", "goal_prob": 0.20, "map": "twoD/map1.json"},
+]
+
 
 def run_dot_2d_astar():
     planning_env = MapDotEnvironment(json_file=MAP_DETAILS["json_file"]) 
@@ -47,6 +62,19 @@ def run_2d_rrt_motion_planning():
     # execute plan
     plan = planner.plan()
     Visualizer(bb).visualize_plan(plan=plan, start=MAP_DETAILS["start"], goal=MAP_DETAILS["goal"])
+
+def run_experiments():
+    for exp in EXPERIMENTS:
+        print(f"Running experiment with ext_mode={exp['ext_mode']} and goal_prob={exp['goal_prob']}")
+
+        MAP_DETAILS = {"json_file": "twoD/map_mp.json", "start": np.array([0.78, -0.78, 0.0, 0.0]), "goal": np.array([0.3, 0.15, 1.0, 1.1])}
+        planning_env = MapEnvironment(json_file=MAP_DETAILS["json_file"], task="mp")
+        bb = BuildingBlocks2D(planning_env)
+        planner = RRTMotionPlanner(bb=bb, start=MAP_DETAILS["start"], goal=MAP_DETAILS["goal"], ext_mode=exp["ext_mode"], goal_prob=exp["goal_prob"])
+        
+        # execute plan
+        plan = planner.plan()
+        Visualizer(bb).visualize_plan(plan=plan, start=MAP_DETAILS["start"], goal=MAP_DETAILS["goal"])
 
 def run_2d_rrt_inspection_planning():
     MAP_DETAILS = {"json_file": "twoD/map_ip.json", "start": np.array([0.78, -0.78, 0.0, 0.0]), "goal": np.array([0.3, 0.15, 1.0, 1.1])}
@@ -121,9 +149,10 @@ def run_3d():
 
 
 if __name__ == "__main__":
-    run_dot_2d_astar()
+    # run_dot_2d_astar()
     # run_dot_2d_rrt()
     # run_dot_2d_rrt_star()
+    run_experiments()
     # run_2d_rrt_motion_planning()
     # run_2d_rrt_inspection_planning()
     # run_3d()
