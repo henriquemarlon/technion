@@ -21,14 +21,13 @@ class AStarPlanner(object):
             (0, -1), (1, 0), (0, 1), (-1, 0),
             (-1, -1), (1, -1), (-1, 1), (1, 1)
         ]
-        self.epsilon = 1.0
+        self.epsilon = 20.0
 
     def plan(self):
         """
         Executes Weighted A*: 
         - Return the final path as a list/array of [x, y] states.
         """
-
         return np.array(self.a_star(self.start, self.goal))
 
     def compute_heuristic(self, state):
@@ -36,6 +35,13 @@ class AStarPlanner(object):
         Weighted A* heuristic = epsilon * (Euclidean distance to goal).
         """
         return self.epsilon * self.bb.compute_distance(state, self.goal)
+
+    def calculate_tentative_cost(self, current_node, neighbor, g_values):
+        """
+        Auxiliary function to calculate the tentative cost-to-come (g).
+        """
+        step_cost = self.bb.compute_distance(current_node, neighbor)
+        return g_values[current_node] + step_cost
 
     def a_star(self, start_loc, goal_loc):
         """
@@ -69,8 +75,7 @@ class AStarPlanner(object):
                     if (self.bb.config_validity_checker(neighbor_arr) and
                         self.bb.edge_validity_checker(np.array(current_node), neighbor_arr)):
 
-                        step_cost = self.bb.compute_distance(current_node, neighbor)
-                        tentative_g = g_values[current_node] + step_cost
+                        tentative_g = self.calculate_tentative_cost(current_node, neighbor, g_values)
                         
                         if (neighbor not in g_values) or (tentative_g < g_values[neighbor]):
                             g_values[neighbor] = tentative_g
