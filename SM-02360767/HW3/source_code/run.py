@@ -16,8 +16,8 @@ from RRTInspectionPlanner import RRTInspectionPlanner
 from RRTStarPlanner import RRTStarPlanner
 from twoD.visualizer import Visualizer
 
-MAP_DETAILS = {"json_file": "twoD/map1.json", "start": np.array([10,10]), "goal": np.array([4, 6])}
-# MAP_DETAILS = {"json_file": "twoD/map2.json", "start": np.array([360, 150]), "goal": np.array([100, 200])}
+# MAP_DETAILS = {"json_file": "twoD/map1.json", "start": np.array([10,10]), "goal": np.array([4, 6])}
+MAP_DETAILS = {"json_file": "twoD/map2.json", "start": np.array([360, 150]), "goal": np.array([100, 200])}
 
 def run_dot_2d_astar():
     planning_env = MapDotEnvironment(json_file=MAP_DETAILS["json_file"]) 

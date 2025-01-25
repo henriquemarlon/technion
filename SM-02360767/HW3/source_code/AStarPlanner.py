@@ -2,7 +2,7 @@ import numpy as np
 import heapq
 
 class AStarPlanner(object):
-    def __init__(self, bb, start, goal):
+    def _init_(self, bb, start, goal):
         self.bb = bb
         self.start = start
         self.goal = goal
@@ -28,20 +28,21 @@ class AStarPlanner(object):
         Executes Weighted A*: 
         - Return the final path as a list/array of [x, y] states.
         """
-        return np.array(self.a_star(self.start, self.goal))
+        path = self.a_star(self.start, self.goal)
+        if path:
+            path_array = np.array(path)
+            total_cost = self.compute_cost(path_array)
+            print(f"Total cost: {total_cost}")
+            return path_array
+        else:
+            print("No path found.")
+            return []
 
     def compute_heuristic(self, state):
         """
         Weighted A* heuristic = epsilon * (Euclidean distance to goal).
         """
         return self.epsilon * self.bb.compute_distance(state, self.goal)
-
-    def calculate_tentative_cost(self, current_node, neighbor, g_values):
-        """
-        Auxiliary function to calculate the tentative cost-to-come (g).
-        """
-        step_cost = self.bb.compute_distance(current_node, neighbor)
-        return g_values[current_node] + step_cost
 
     def a_star(self, start_loc, goal_loc):
         """
@@ -75,7 +76,8 @@ class AStarPlanner(object):
                     if (self.bb.config_validity_checker(neighbor_arr) and
                         self.bb.edge_validity_checker(np.array(current_node), neighbor_arr)):
 
-                        tentative_g = self.calculate_tentative_cost(current_node, neighbor, g_values)
+                        step_cost = self.bb.compute_distance(current_node, neighbor)
+                        tentative_g = g_values[current_node] + step_cost
                         
                         if (neighbor not in g_values) or (tentative_g < g_values[neighbor]):
                             g_values[neighbor] = tentative_g
@@ -99,3 +101,13 @@ class AStarPlanner(object):
 
     def get_expanded_nodes(self):
         return self.expanded_nodes
+
+    def compute_cost(self, plan):
+        '''
+        Compute and return the plan cost, which is the sum of the distances between steps in the configuration space.
+        @param plan: A given plan for the robot.
+        '''
+        total_cost = 0
+        for i in range(len(plan) - 1):
+            total_cost += self.bb.compute_distance(plan[i], plan[i + 1])
+        return total_cost
