@@ -2,93 +2,130 @@ import numpy as np
 from RRTTree import RRTTree
 import time
 
-class RRT_STAR(object):
-    def __init__(self, bb, ext_mode, goal_prob):
-        # Set environment and search parameters
+class RRTStarPlanner(object):
+
+    def __init__(self, bb, ext_mode, max_step_size,
+                 max_itr=None, stop_on_goal=None, k=None, goal_prob=0.01):
+
+        # set environment and search tree
         self.bb = bb
+        self.tree = RRTTree(self.bb)
+
+        self.max_itr = max_itr
+        self.stop_on_goal = stop_on_goal
+
+        # set search params
         self.ext_mode = ext_mode
         self.goal_prob = goal_prob
-        self.eta = 0.2  # Step size for extension mode E2
+        self.k = k
+
+        self.step_size = max_step_size
 
     def plan(self, start, goal):
         '''
-        Compute and return the plan from start to goal.
-        Returns a tuple: (np.array(plan), total_cost).
+        Compute and return the plan. The function should return a numpy array containing the states (positions) of the robot.
         '''
-        start_time = time.time()
+        
+        self.start = np.array(start)
+        self.goal = np.array(goal)
+        
+        initial_time = time.time()
+        
+        self.tree.add_vertex(np.array(self.start))
+        for i in range(self.max_itr):
+            # print("Iteration: ", i)
+            x_rand = self.bb.sample_random_config(self.goal_prob, self.goal)
+            x_nearest_id, x_nearest = self.tree.get_nearest_config(x_rand)
+            x_new = self.extend(x_nearest, x_rand)
+            if self.bb.config_validity_checker(x_new) == False or self.tree.is_goal_exists(x_new):
+                continue
 
-        # Update start and goal, and initialize the search tree
-        self.start = start
-        self.goal = goal
-        self.tree = RRTTree(self.bb)
-        root_id = self.tree.add_vertex(self.start)  # Add root vertex
-        assert root_id == self.tree.get_root_id()  # Ensure it is the root
+            if self.bb.edge_validity_checker(x_nearest, x_new):
+                x_new_id = self.tree.add_vertex(np.array(x_new))
+                edge_cost = self.bb.compute_distance(x_nearest, x_new)
+                self.tree.add_edge(x_nearest_id, x_new_id, edge_cost)
 
-        while True:
-            # Sample a random configuration
-            rand_config = self.bb.sample_random_config(self.goal_prob, self.goal)
+                X_near_id, X_near = self.tree.get_k_nearest_neighbors(x_new, self.k)
 
-            # Find the nearest configuration in the tree
-            nearest_id, near_config = self.tree.get_nearest_config(rand_config)
+                for x_near_id, x_near in zip(X_near_id, X_near):
+                    self.rewire_rrt_star(x_near, x_near_id, x_new, x_new_id)
 
-            # Extend towards the random configuration
-            new_config = self.extend(near_config, rand_config)
+                for x_near_id, x_near in zip(X_near_id, X_near):
+                    self.rewire_rrt_star(x_new, x_new_id, x_near, x_near_id)
 
-            # Check if the new configuration is valid
-            if self.bb.edge_validity_checker(near_config, new_config):
-                new_id = self.tree.add_vertex(new_config)
-                edge_cost = self.bb.compute_distance(near_config, new_config)
-                self.tree.add_edge(nearest_id, new_id, edge_cost=edge_cost)
+            if self.stop_on_goal and self.tree.is_goal_exists(self.goal):
+                break
+        
+        plan = self.return_path()
+        if plan is None:
+            print("No valid path found.")
+            return None, None
 
-                # Check if the goal is reached
-                if self.bb.compute_distance(new_config, self.goal) < self.eta:
-                    goal_id = self.tree.add_vertex(self.goal)
-                    self.tree.add_edge(new_id, goal_id, edge_cost=self.bb.compute_distance(new_config, self.goal))
-                    break
+        cost = self.compute_cost(plan)
+        
+        print("Time taken: ", time.time() - initial_time)
+        return plan, cost
+    
+    def rewire_rrt_star(self, x_near, x_near_id, x_new, x_new_id):
 
-        # Extract the path from the tree (from start to goal)
-        plan = self._extract_plan()
-        total_cost = self.compute_cost(plan)
-        execution_time = time.time() - start_time
-        print(f"Planning completed in {execution_time:.2f} seconds with cost {total_cost}")
-        return np.array(plan), total_cost
+        edge_cost = self.bb.compute_distance(x_near, x_new)
+        new_cost = self.tree.vertices[x_near_id].cost + edge_cost
 
+        if new_cost < self.tree.vertices[x_new_id].cost and self.bb.edge_validity_checker(x_near, x_new):
+            del self.tree.edges[x_new_id]
+
+            self.tree.add_edge(x_near_id, x_new_id, edge_cost)
+
+            self.update_vertex_costs(x_new_id)
+
+    def update_vertex_costs(self, vertex_id):
+        queue = [vertex_id]
+        edges = self.tree.get_edges_as_states()
+        while queue:
+            current_id = queue.pop(0)
+            childern_configs = [state[1] for state in edges if state[0].any() == current_id]
+            children_ids = [self.tree.get_idx_for_config(config) for config in childern_configs]
+
+            current_cost = self.tree.vertices[current_id].cost
+            edges_cost = [self.bb.compute_distance(
+                self.tree.vertices[current_id].config, child_config
+            ) for child_config in childern_configs]
+
+            for child_id, edge_cost in zip(children_ids, edges_cost):
+                new_cost = current_cost + edge_cost
+                if new_cost < self.tree.vertices[child_id].cost:
+                    self.tree.vertices[child_id].set_cost(new_cost)
+                    queue.append(child_id)
+    
     def compute_cost(self, plan):
-        '''
-        Compute and return the cost of the plan, which is the sum of distances between consecutive configurations.
-        @param plan: The computed plan for the robot.
-        '''
-        total_cost = 0
+        # TODO: HW3 3
+        cost = 0
         for i in range(len(plan) - 1):
-            total_cost += self.bb.compute_distance(plan[i], plan[i + 1])
-        return total_cost
+            cost += self.bb.compute_distance(plan[i], plan[i + 1])
+        return float(cost)
 
-    def extend(self, near_config, rand_config):
-        '''
-        Compute and return a new configuration based on the sampled configuration.
-        @param near_config: The configuration closest to the sampled configuration.
-        @param rand_config: The sampled configuration.
-        '''
-        if self.ext_mode == "E1":
-            # Extend fully to the sampled configuration (E1)
-            return rand_config
-        elif self.ext_mode == "E2":
-            # Extend by a step size eta towards the sampled configuration (E2)
-            dist = self.bb.compute_distance(near_config, rand_config)
-            if dist <= self.eta:
-                return rand_config
-            return near_config + self.eta * ((rand_config - near_config) / dist)
-        else:
-            raise ValueError(f"Invalid extension mode: {self.ext_mode}")
-
-    def _extract_plan(self):
-        '''
-        Extract the path from the tree, starting from the goal and tracing back to the root.
-        '''
+    def extend(self, x_near, x_rand):
+        # TODO: HW3 3
+        if self.step_size is None:
+            return x_rand
+        direction = x_rand - x_near
+        length = np.linalg.norm(direction)
+        if length > self.step_size:
+            direction = direction / length * self.step_size
+        return x_near + direction
+    
+    def return_path(self):
         path = []
-        current_id = self.tree.get_idx_for_config(self.goal)
-        while current_id is not None:
-            path.append(self.tree.vertices[current_id].config)
-            current_id = self.tree.edges.get(current_id, None)
+        curr_state = self.goal
+        while(curr_state is not None):
+            path.append(curr_state)
+            if(curr_state == self.start).all():
+                break
+            curr_state_id = self.tree.get_idx_for_config(curr_state)
+            if curr_state_id is None:
+                return None
+            next_state_index = self.tree.edges[curr_state_id]
+            curr_state = self.tree.vertices[next_state_index].config
+
         path.reverse()
-        return path
+        return np.array(path)

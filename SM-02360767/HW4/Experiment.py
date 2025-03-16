@@ -2,6 +2,7 @@ import json
 import time
 from enum import Enum
 import numpy as np
+import os
 
 from environment import Environment
 
@@ -14,10 +15,12 @@ from environment import LocationType
 
 
 def log(msg):
+    dir_path = r"./outputs/"
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
     written_log = f"STEP: {msg}"
     print(written_log)
-    dir_path = r"./outputs/"
-    with open(dir_path + 'output.txt', 'a') as file:
+    with open(os.path.join(dir_path, 'output.txt'), 'a') as file:
         file.write(f"{written_log}\n")
 
 
