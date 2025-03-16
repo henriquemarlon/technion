@@ -21,7 +21,7 @@ class RRTStarPlanner(object):
 
         self.step_size = max_step_size
 
-    def plan(self, start, goal):
+    def find_path(self, start, goal):
         '''
         Compute and return the plan. The function should return a numpy array containing the states (positions) of the robot.
         '''
