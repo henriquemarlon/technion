@@ -2,7 +2,6 @@ import json
 import time
 from enum import Enum
 import numpy as np
-import os
 
 from environment import Environment
 
@@ -15,12 +14,10 @@ from environment import LocationType
 
 
 def log(msg):
-    dir_path = r"./outputs/"
-    if not os.path.exists(dir_path):
-        os.makedirs(dir_path)
     written_log = f"STEP: {msg}"
     print(written_log)
-    with open(os.path.join(dir_path, 'output.txt'), 'a') as file:
+    dir_path = r"./outputs/"
+    with open(dir_path + 'output.txt', 'a') as file:
         file.write(f"{written_log}\n")
 
 
@@ -116,7 +113,7 @@ class Experiment:
 
         update_environment(env, active_arm, left_arm_start, cubes_real)
 
-        cube_approach = #TODO 2: find a conf for the arm to get the correct cube
+        # cube_approach = #TODO 2: find a conf for the arm to get the correct cube
         # plan the path
         self.plan_single_arm(planner, right_arm_start, cube_approach, description, active_arm, "move",
                                  left_arm_start, cubes_real, Gripper.OPEN, Gripper.STAY)
